@@ -24,6 +24,7 @@ function App() {
             <Route path="/create-task" element={<CreateTask />} />
             <Route path="/edit-task/:id" element={<EditTask />} /> 
             <Route path="/admin/tasks" element={<AdminTaskList />} />
+            {/* <Route path="/admin/edit-task/:id" element={<EditTask />} /> */}
           </>
         ) : (
           <Route path="*" element={<Navigate to="/login" />} />

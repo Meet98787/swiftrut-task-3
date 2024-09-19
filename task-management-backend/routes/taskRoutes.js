@@ -11,6 +11,7 @@ router.get('/all', authMiddleware, adminMiddleware, taskController.getAllTasks);
 // Admin role: create a task for a specific user
 router.post('/create', authMiddleware, adminMiddleware, taskController.createTaskForUser);
 
+
 // Admin role: edit or delete any task
 router.put('/:id', authMiddleware, adminMiddleware, taskController.updateTask);
 router.delete('/:id', authMiddleware, adminMiddleware, taskController.deleteTask);

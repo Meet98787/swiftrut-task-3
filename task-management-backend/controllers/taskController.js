@@ -14,26 +14,26 @@ exports.getTasksByUser = async (req, res) => {
 // In taskController.js
 
 exports.createTask = async (req, res) => {
-    const { title, description, category, dueDate } = req.body;
-    try {
-      const task = new Task({
-        title,
-        description,
-        category,
-        dueDate,
-        user: req.user.id,  // Assume the user is authenticated
-      });
-      await task.save();
-  
-      // Emit the new task to all connected clients
-      req.io.emit('taskCreated', task);
-  
-      res.json(task);
-    } catch (err) {
-      console.error(err.message);
-      res.status(500).send('Server error');
-    }
-  };
+  const { title, description, category, dueDate } = req.body;
+  try {
+    const task = new Task({
+      title,
+      description,
+      category,
+      dueDate,
+      user: req.user.id,  // Assume the user is authenticated
+    });
+    await task.save();
+
+    // Emit the new task to all connected clients
+    req.io.emit('taskCreated', task);
+
+    res.json(task);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+};
 // Update a task
 exports.updateTask = async (req, res) => {
   const { title, description, category, completed, dueDate } = req.body;
@@ -131,3 +131,28 @@ exports.createTaskForUser = async (req, res) => {
     res.status(500).send('Server error');
   }
 };
+
+exports.updateTask = async (req, res) => {
+  const { title, description, category, dueDate } = req.body;
+
+  try {
+    let task = await Task.findById(req.params.id);
+
+    if (!task) {
+      return res.status(404).json({ msg: 'Task not found' });
+    }
+
+    // Update the task details
+    task.title = title || task.title;
+    task.description = description || task.description;
+    task.category = category || task.category;
+    task.dueDate = dueDate || task.dueDate;
+
+    await task.save();
+    res.json(task);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+};
+
