@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
-import { getTasks, deleteTask, updateTask } from '../api'; // Assuming these APIs are available
+import { getTasks, deleteTask } from '../api';
 import { AuthContext } from '../auth';
 import { Button, Grid, Card, CardContent, Typography, Container } from '@mui/material';
 
@@ -9,6 +10,7 @@ const socket = io('http://localhost:5000'); // Ensure the backend URL is correct
 const TaskList = () => {
   const { token } = useContext(AuthContext);
   const [tasks, setTasks] = useState([]);
+  const navigate = useNavigate(); // Hook for navigation
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -22,19 +24,12 @@ const TaskList = () => {
       setTasks((prevTasks) => [...prevTasks, newTask]);
     });
 
-    socket.on('taskUpdated', (updatedTask) => {
-      setTasks((prevTasks) =>
-        prevTasks.map((task) => (task._id === updatedTask._id ? updatedTask : task))
-      );
-    });
-
     socket.on('taskDeleted', (deletedTaskId) => {
       setTasks((prevTasks) => prevTasks.filter((task) => task._id !== deletedTaskId));
     });
 
     return () => {
       socket.off('taskCreated');
-      socket.off('taskUpdated');
       socket.off('taskDeleted');
     };
   }, [token]);
@@ -42,15 +37,14 @@ const TaskList = () => {
   const handleDelete = async (taskId) => {
     try {
       await deleteTask(taskId, token);
+      setTasks((prevTasks) => prevTasks.filter((task) => task._id !== taskId));
     } catch (err) {
       console.error('Error deleting task:', err);
     }
   };
 
-  const handleUpdate = (taskId) => {
-    // Navigate to update page or trigger update modal
-    // This can be replaced with actual update logic or navigation
-    console.log('Update Task:', taskId);
+  const handleEdit = (taskId) => {
+    navigate(`/edit-task/${taskId}`); // Navigate to EditTask component with task ID
   };
 
   return (
@@ -58,6 +52,14 @@ const TaskList = () => {
       <Typography variant="h4" component="h2" gutterBottom>
         Task List
       </Typography>
+      <Button
+        variant="contained"
+        color="primary"
+        sx={{ mb: 3 }}
+        onClick={() => navigate('/create-task')} // Navigate to create task page
+      >
+        Create Task
+      </Button>
       <Grid container spacing={3}>
         {tasks.length > 0 ? (
           tasks.map((task) => (
@@ -70,27 +72,21 @@ const TaskList = () => {
                   <Typography variant="body2" color="text.secondary">
                     {task.description}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Category: {task.category}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Due Date: {new Date(task.dueDate).toLocaleDateString()}
-                  </Typography>
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    sx={{ mt: 2, mr: 2 }}
+                    onClick={() => handleDelete(task._id)}
+                  >
+                    Delete
+                  </Button>
                   <Button
                     variant="contained"
                     color="primary"
                     sx={{ mt: 2 }}
-                    onClick={() => handleUpdate(task._id)}
+                    onClick={() => handleEdit(task._id)}
                   >
                     Update
-                  </Button>
-                  <Button
-                    variant="contained"
-                    color="secondary"
-                    sx={{ mt: 2, ml: 2 }}
-                    onClick={() => handleDelete(task._id)}
-                  >
-                    Delete
                   </Button>
                 </CardContent>
               </Card>

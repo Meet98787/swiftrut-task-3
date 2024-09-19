@@ -80,3 +80,54 @@ exports.deleteTask = async (req, res) => {
     res.status(500).send('Server error');
   }
 };
+
+// get task by id for edit
+exports.getTaskById = async (req, res) => {
+  try {
+    const task = await Task.findById(req.params.id);
+
+    if (!task) {
+      return res.status(404).json({ msg: 'Task not found' });
+    }
+
+    res.json(task);
+  } catch (err) {
+    console.error(err.message);
+    if (err.kind === 'ObjectId') {
+      return res.status(404).json({ msg: 'Task not found' });
+    }
+    res.status(500).send('Server error');
+  }
+};
+
+// Get all tasks (admin only)
+exports.getAllTasks = async (req, res) => {
+  try {
+    const tasks = await Task.find().populate('user', ['username', 'email']);
+    res.json(tasks);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+};
+
+// Create a task for a specific user (admin only)
+exports.createTaskForUser = async (req, res) => {
+  const { title, description, category, dueDate, userId } = req.body;
+
+  try {
+    const task = new Task({
+      title,
+      description,
+      category,
+      dueDate,
+      user: userId, // Admin selects the user
+    });
+
+    await task.save();
+    res.json(task);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+};

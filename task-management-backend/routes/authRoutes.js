@@ -3,6 +3,9 @@ const { check } = require('express-validator');
 const authController = require('../controllers/authController');
 const { loginUser } = require('../controllers/authController');
 const { authMiddleware } = require('../middleware/authMiddleware');
+const { adminMiddleware } = require('../middleware/adminMiddleware'); 
+
+
 
 const router = express.Router();
 
@@ -24,5 +27,8 @@ router.post('/login', loginUser);
 router.get('/protected', authMiddleware, (req, res) => {
   res.json({ msg: 'This is a protected route', user: req.user });
 });
+
+// Admin role: Get all users
+router.get('/all', authMiddleware, adminMiddleware, authController.getAllUsers);
 
 module.exports = router;

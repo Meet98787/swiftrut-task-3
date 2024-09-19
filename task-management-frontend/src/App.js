@@ -5,7 +5,9 @@ import Login from './components/Login';
 import Register from './components/Register';
 import TaskList from './components/TaskList';
 import CreateTask from './components/CreateTask';
+import EditTask from './components/EditTask';
 import { AuthContext, AuthProvider } from './auth';
+import AdminTaskList from './components/AdminTaskList';
 
 function App() {
   const { isAuthenticated } = useContext(AuthContext);
@@ -18,8 +20,10 @@ function App() {
         <Route path="/register" element={<Register />} />
         {isAuthenticated ? (
           <>
-            <Route path="/tasks" element={<TaskList />} />
+            <Route path="/" element={<TaskList />} />
             <Route path="/create-task" element={<CreateTask />} />
+            <Route path="/edit-task/:id" element={<EditTask />} /> 
+            <Route path="/admin/tasks" element={<AdminTaskList />} />
           </>
         ) : (
           <Route path="*" element={<Navigate to="/login" />} />
